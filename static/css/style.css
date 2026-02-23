@@ -1,0 +1,200 @@
+/* --- Variáveis Globais (Facilita mudar as cores depois) --- */
+:root {
+    --primary: #4e73df;
+    --primary-dark: #224abe;
+    --bg-dark: linear-gradient(135deg, #1e1e2f, #252542);
+    --bg-light: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+    --glass: rgba(255, 255, 255, 0.06);
+    --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg-dark);
+    color: white;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: background 0.4s ease;
+}
+
+/* --- Layout Principal --- */
+.container {
+    width: 420px;
+    max-width: 92%;
+    padding: 35px;
+    background: var(--glass);
+    backdrop-filter: blur(15px);
+    border-radius: 25px;
+    text-align: center;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    transition: var(--transition);
+}
+
+.container:hover {
+    transform: translateY(-5px);
+}
+
+/* --- Tipografia --- */
+h1 {
+    font-size: 1.3rem;
+    font-weight: 500;
+    opacity: 0.8;
+    letter-spacing: 0.5px;
+}
+
+h2 {
+    font-size: 56px; 
+    font-weight: 700;
+    margin: 15px 0; 
+    letter-spacing: -1px;
+}
+
+/* --- UI de Progresso --- */
+.progress-container {
+    position: relative;
+    width: 220px;
+    height: 220px;
+    margin: 20px auto;
+}
+
+.progress-ring-circle {
+    transform: rotate(-90deg);
+    transform-origin: center;
+    transition: stroke-dashoffset 1s linear;
+}
+
+.timer-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* --- Controles e Inputs --- */
+.config {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin: 25px 0;
+}
+
+.config label {
+    display: block;
+    font-size: 0.8rem;
+    margin-bottom: 8px;
+    opacity: 0.7;
+}
+
+input {
+    width: 100%;
+    padding: 10px;
+    border-radius: 12px;
+    border: none;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    text-align: center;
+    font-size: 1rem;
+    outline: none;
+}
+
+input:focus {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* --- Botões --- */
+button {
+    padding: 12px 28px;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+button:hover {
+    transform: scale(1.05);
+    filter: brightness(1.1);
+}
+
+button:active {
+    transform: scale(0.98);
+}
+
+/* --- Dashboard de Stats --- */
+.dashboard {
+    display: flex;
+    gap: 15px;
+    margin-top: 30px;
+}
+
+.card {
+    flex: 1;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+    transition: var(--transition);
+}
+
+.card:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.card h3 {
+    font-size: 0.85rem;
+    margin-bottom: 5px;
+    opacity: 0.6;
+}
+
+.card p {
+    font-size: 1.4rem;
+    font-weight: 700;
+}
+
+/* --- Utilitários (Tema & Mobile) --- */
+.theme-toggle {
+    position: fixed;
+    top: 25px;
+    right: 25px;
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background: var(--glass);
+    display: grid;
+    place-items: center;
+}
+
+body.light {
+    background: var(--bg-light);
+    color: #333;
+}
+
+body.light .container {
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+}
+
+body.light input {
+    background: rgba(0, 0, 0, 0.05);
+    color: #333;
+}
+
+body.light .card {
+    background: rgba(0, 0, 0, 0.03);
+}
+
+@media (max-width: 480px) {
+    .container { padding: 25px; }
+    h2 { font-size: 3rem; }
+    .config { grid-template-columns: 1fr; }
+}

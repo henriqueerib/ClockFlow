@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ClockFlow - Seu Tempo sob Controle</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+
+    <div class="container">
+        <h1 id="mode">Clock Flow</h1>
+        
+        <div class="progress-container">
+            <svg class="progress-ring" width="220" height="220">
+                <circle class="progress-ring-bg" stroke="#444" stroke-width="10" fill="transparent" r="90" cx="110" cy="110" />
+                <circle id="progressCircle" class="progress-ring-circle" stroke="#4e73df" stroke-width="10" fill="transparent" r="90" cx="110" cy="110" />
+            </svg>
+
+            <div class="timer-text">
+                <h2 id="timer">25:00</h2>
+            </div>
+        </div>
+
+        <div class="config">
+            <div>
+                <label>Foco (min)</label>
+                <input type="number" id="focusTime" value="25" min="1" max="60">
+            </div>
+            <div>
+                <label>Pausa (min)</label>
+                <input type="number" id="breakTime" value="5" min="1" max="30">
+            </div>
+        </div>
+
+        <div class="buttons">
+            <button onclick="toggleTimer()" id="startPauseBtn">Iniciar</button>
+            <button onclick="resetTimer()">Resetar</button>
+        </div>
+
+        <div class="dashboard">
+            <div class="card">
+                <h3>Ciclos</h3>
+                <p id="cycles">0</p>
+            </div>
+            <div class="card">
+                <h3>Tempo Focado</h3>
+                <p id="focusTotal">0 min</p>
+            </div>
+        </div>
+
+        <audio id="alarmSound">
+            <source src="https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg" type="audio/ogg">
+        </audio>
+    </div>
+
+    <script>
+        // --- Variáveis de Controle ---
+        let timerInterval;
+        let timeLeft;
+        let isRunning = false;
+        let isFocusMode = true;
+        let cycles = 0;
+        let focusMinutes = 0;
+        
+        // Configurações iniciais
+        let focusTime = 25;
+        let breakTime = 5;
+
+        // Elementos do DOM
+        const timerElement = document.getElementById('timer');
+        const modeElement = document.getElementById('mode');
+        const cyclesElement = document.getElementById('cycles');
+        const focusTotalElement = document.getElementById('focusTotal');
+        const focusInput = document.getElementById('focusTime');
+        const breakInput = document.getElementById('breakTime');
+        const startPauseBtn = document.getElementById('startPauseBtn');
+        const alarmSound = document.getElementById('alarmSound');
+        const progressCircle = document.getElementById('progressCircle');
+
+        // Configuração do SVG de progresso
+        const circumference = 2 * Math.PI * 90; 
+        progressCircle.style.strokeDasharray = circumference;
+        progressCircle.style.strokeDashoffset = circumference;
+
+        // Atualiza o relógio e a barra circular na tela
+        function updateDisplay() {
+            const min = Math.floor(timeLeft / 60);
+            const sec = timeLeft % 60;
+            timerElement.textContent = `${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
+            
+            const total = isFocusMode ? focusTime * 60 : breakTime * 60;
+            const progress = (total - timeLeft) / total;
+            progressCircle.style.strokeDashoffset = circumference - (circumference * progress);
+        }
+
+        // Lógica do botão Iniciar/Pausar
+        function toggleTimer() {
+            isRunning ? pauseTimer() : startTimer();
+        }
+
+        function startTimer() {
+            if (!timerInterval) {
+                if (!timeLeft) {
+                    focusTime = parseInt(focusInput.value);
+                    breakTime = parseInt(breakInput.value);
+                    timeLeft = focusTime * 60;
+                }
+                
+                isRunning = true;
+                startPauseBtn.textContent = 'Pausar';
+                
+                timerInterval = setInterval(() => {
+                    if (timeLeft > 0) {
+                        timeLeft--;
+                        updateDisplay();
+                    } else {
+                        timerComplete();
+                    }
+                }, 1000);
+            }
+        }
+
+        function pauseTimer() {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            isRunning = false;
+            startPauseBtn.textContent = 'Iniciar';
+        }
+
+        function resetTimer() {
+            pauseTimer();
+            timeLeft = isFocusMode ? focusTime * 60 : breakTime * 60;
+            updateDisplay();
+        }
+
+        // Quando o tempo acaba...
+        function timerComplete() {
+            alarmSound.play();
+            pauseTimer();
+
+            if (isFocusMode) {
+                cycles++;
+                focusMinutes += focusTime;
+                
+                cyclesElement.textContent = cycles;
+                focusTotalElement.textContent = focusMinutes + ' min';
+                
+                isFocusMode = false;
+                modeElement.textContent = 'Modo Pausa';
+                timeLeft = breakTime * 60;
+            } else {
+                isFocusMode = true;
+                modeElement.textContent = 'Modo Foco';
+                timeLeft = focusTime * 60;
+            }
+
+            updateDisplay();
+            startTimer(); // Começa o próximo ciclo automaticamente
+        }
+
+        // Atualiza valores caso o usuário mude os inputs enquanto parado
+        function updateTimes() {
+            if (!isRunning) {
+                focusTime = parseInt(focusInput.value);
+                breakTime = parseInt(breakInput.value);
+                timeLeft = isFocusMode ? focusTime * 60 : breakTime * 60;
+                updateDisplay();
+            }
+        }
+
+        focusInput.addEventListener('change', updateTimes);
+        breakInput.addEventListener('change', updateTimes);
+
+        // Tema Dark/Light
+        function toggleTheme() {
+            document.body.classList.toggle('light');
+            const btn = document.querySelector('.theme-toggle');
+            btn.textContent = document.body.classList.contains('light') ? '☀️' : '🌙';
+        }
+
+        // Setup inicial ao carregar a página
+        timeLeft = focusTime * 60;
+        updateDisplay();
+
+        // Evita que o Enter nos inputs quebre o layout ou dê refresh
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') e.preventDefault();
+            });
+        });
+    </script>
+</body>
+</html>
